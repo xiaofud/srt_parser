@@ -1,0 +1,6 @@
+*.pyc
+# 测试字幕文件
+subtitle
+# FSM文件夹
+FSM/
+
