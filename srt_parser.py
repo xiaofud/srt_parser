@@ -1,7 +1,7 @@
 # coding=utf-8
 __author__ = 'smallfly'
 
-from token import SrtToken
+from srt_token import SrtToken
 
 class SrtParser:
 
