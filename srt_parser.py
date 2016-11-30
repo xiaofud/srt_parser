@@ -2,6 +2,7 @@
 __author__ = 'smallfly'
 
 from srt_token import SrtToken
+from subtitle import Subtitle
 
 class SrtParser:
 
@@ -26,6 +27,13 @@ class SrtParser:
         self.i = 0
 
     def parse(self, content):
+
+        subtitles = []
+        number = None
+        start_time = None
+        end_time = None
+        text = ""
+
         self.i = 0
         ch = content[self.i]
         token_count = len(self.analyser.tokens)
@@ -45,6 +53,7 @@ class SrtParser:
                         print("ERROR, TYPE COUNTER NEEDED BUT", new_token.type, "FOUND")
                         return
                     print("COUNTER", new_token.value)
+                    number = int(new_token.value)
                     # 跳转到标号态
                     self.state = SrtParser.counter_state
 
@@ -53,6 +62,7 @@ class SrtParser:
                         print("ERROR, TYPE TIMESTAMP NEEDED BUT", new_token.type, "FOUND")
                         return
                     print("START TIME", new_token.value)
+                    start_time = new_token.value
                     # 跳转到开始时间态
                     self.state = SrtParser.start_time_state
 
@@ -69,6 +79,7 @@ class SrtParser:
                         print("ERROR, TYPE TIMESTAMP NEEDED BUT", new_token.type, "FOUND")
                         return
                     print("END   TIME", new_token.value)
+                    end_time = new_token.value
                     # 结束时间态
                     self.state = SrtParser.end_time_state
 
@@ -79,10 +90,21 @@ class SrtParser:
                         # 进入字幕态
                         self.state = SrtParser.text_state
                         print("TEXT:", new_token.value)
+                        if not new_token.value.endswith("\n"):
+                            new_token.value += "\n"
+                        text += new_token.value
                     else:
                         # 跳到起始态
                         self.state = SrtParser.start_state
                         print("------- END OF A BLOCK OF SUBTITLE -------")
+                        # 生成新的subtitle对象
+                        subtitle = Subtitle(number, start_time, end_time, text)
+                        subtitles.append(subtitle)
+
+                        # 清空数据
+                        number = None
+                        start_time = end_time = None
+                        text = ""
 
 
             if move_cursor:
@@ -93,3 +115,4 @@ class SrtParser:
                     break
 
         print(self.analyser.tokens)
+        return subtitles
