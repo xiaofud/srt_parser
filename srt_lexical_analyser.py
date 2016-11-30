@@ -42,7 +42,7 @@ class LexicalAnalyser:
         if self.state == SrtToken.TYPE_TEXT:
             # 可能到COUNTER的情况
             # 如果读取该ch后, 缓冲区依然是个数字的话, 那么应该跳入COUNTER状态
-            if after_append_ch.strip().isdigit():
+            if after_append_ch.lstrip().isdigit():
                 # 这一步是为了 时间戳 类型能够准确判断TIMESTAMP类型
                 # self.char_buffer = self.char_buffer.strip()
                 if ch is not None:
@@ -106,6 +106,7 @@ class LexicalAnalyser:
         # 时间跨度字符状态
         elif self.state == SrtToken.TYPE_TIME_ARROW:
             # 如果读入ch后, 直接为 --> 那么生成新的Token
+            # 或者 读入 ch 以前就是 --> 但是ch是空白字符的话, 依然认为为 -->, 并且会吃掉后面的空格
             if self.char_buffer == "-->" and ( ch is None or ch.strip() == ""):
                 if ch is not None:
                     self.char_buffer += ch
@@ -212,6 +213,7 @@ if __name__ == '__main__':
 this is the last line of subtitle 0
 what's going on?
 -->
+1995
 
 1
 00:00:02,000 --> 00:00:03,000
@@ -223,5 +225,5 @@ Hello from the other side.
 Hi!
 Hi from the other side.
 """
-    text = "-->  -->"
+    text = "1 "
     test(text)

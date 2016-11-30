@@ -85,17 +85,6 @@ class SrtParser:
                         print("------- END OF A BLOCK OF SUBTITLE -------")
 
 
-                # elif self.state == SrtParser.text_state:
-                #     # 接受任意非空字符
-                #     if new_token.value != "\n":
-                #         # 进入字幕态
-                #         self.state = SrtParser.text_state
-                #         print("TEXT:", new_token.value)
-                #     else:
-                #         # 跳到起始态
-                #         self.state = SrtParser.start_state
-                #         print("END OF A BLOCK OF SUBTITLE")
-
             if move_cursor:
                 self.i += 1
                 if self.i < len(content):
