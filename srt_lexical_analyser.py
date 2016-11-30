@@ -63,6 +63,9 @@ class LexicalAnalyser:
                     createType = SrtToken.TYPE_TEXT
                 elif ch is None and len(self.char_buffer) == 0:
                     createType = None
+                # 别忘了这个情况
+                else:
+                    createType = SrtToken.TYPE_TEXT
                 self.state = SrtToken.TYPE_TEXT
 
             # 其他输字符, 直接加入到缓冲区
@@ -103,7 +106,7 @@ class LexicalAnalyser:
         # 时间跨度字符状态
         elif self.state == SrtToken.TYPE_TIME_ARROW:
             # 如果读入ch后, 直接为 --> 那么生成新的Token
-            if after_append_ch == "-->":
+            if self.char_buffer == "-->" and ( ch is None or ch.strip() == ""):
                 if ch is not None:
                     self.char_buffer += ch
                 createType = SrtToken.TYPE_TIME_ARROW
@@ -204,5 +207,21 @@ def test(text):
 
 if __name__ == '__main__':
     # test("   ABD ABC")
-    text = "0\n\n00:00:00,000 --> 11:11:11,111\nHello World!\nHello from the other side\n\n1\n00:00:00,000 --> 11:11:11,111\nThe Second Subtitle\n"
+    text = """0
+00:00:00,000 --> 00:00:01,000
+this is the last line of subtitle 0
+what's going on?
+-->
+
+1
+00:00:02,000 --> 00:00:03,000
+Hello!
+Hello from the other side.
+
+2
+00:00:02,000 --> 00:00:03,000
+Hi!
+Hi from the other side.
+"""
+    text = "-->  -->"
     test(text)

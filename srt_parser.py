@@ -68,12 +68,13 @@ class SrtParser:
                     if new_token.type != SrtToken.TYPE_TIMESTAMP:
                         print("ERROR, TYPE TIMESTAMP NEEDED BUT", new_token.type, "FOUND")
                         return
-                    print("END TIME", new_token.value)
+                    print("END   TIME", new_token.value)
                     # 结束时间态
                     self.state = SrtParser.end_time_state
 
                 elif self.state == SrtParser.end_time_state or self.state == SrtParser.text_state:
                     # 接受任意非换行符字符串(即空行)
+                    # print("TYPE:", new_token.type, [new_token.value])
                     if new_token.value != "\n":
                         # 进入字幕态
                         self.state = SrtParser.text_state
