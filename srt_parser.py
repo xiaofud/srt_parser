@@ -72,28 +72,28 @@ class SrtParser:
                     # 结束时间态
                     self.state = SrtParser.end_time_state
 
-                elif self.state == SrtParser.end_time_state:
-                    # 接受任意非空字符串
-                    if new_token.value != "":
+                elif self.state == SrtParser.end_time_state or self.state == SrtParser.text_state:
+                    # 接受任意非换行符字符串(即空行)
+                    if new_token.value != "\n":
                         # 进入字幕态
                         self.state = SrtParser.text_state
                         print("TEXT:", new_token.value)
                     else:
                         # 跳到起始态
                         self.state = SrtParser.start_state
-                        print("END OF A BLOCK OF SUBTITLE")
+                        print("------- END OF A BLOCK OF SUBTITLE -------")
 
 
-                elif self.state == SrtParser.text_state:
-                    # 接受任意非空字符
-                    if new_token.value != "":
-                        # 进入字幕态
-                        self.state = SrtParser.text_state
-                        print("TEXT:", new_token.value)
-                    else:
-                        # 跳到起始态
-                        self.state = SrtParser.start_state
-                        print("END OF A BLOCK OF SUBTITLE")
+                # elif self.state == SrtParser.text_state:
+                #     # 接受任意非空字符
+                #     if new_token.value != "\n":
+                #         # 进入字幕态
+                #         self.state = SrtParser.text_state
+                #         print("TEXT:", new_token.value)
+                #     else:
+                #         # 跳到起始态
+                #         self.state = SrtParser.start_state
+                #         print("END OF A BLOCK OF SUBTITLE")
 
             if move_cursor:
                 self.i += 1

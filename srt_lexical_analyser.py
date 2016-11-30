@@ -43,9 +43,10 @@ class LexicalAnalyser:
             # 可能到COUNTER的情况
             # 如果读取该ch后, 缓冲区依然是个数字的话, 那么应该跳入COUNTER状态
             if after_append_ch.strip().isdigit():
-                # 这一步是为了 时间戳 类型能够准确判断
-                self.char_buffer = self.char_buffer.strip()
-                self.char_buffer += ch
+                # 这一步是为了 时间戳 类型能够准确判断TIMESTAMP类型
+                # self.char_buffer = self.char_buffer.strip()
+                if ch is not None:
+                    self.char_buffer += ch
                 self.state = SrtToken.TYPE_COUNTER
 
             # 如果ch为 - 符号, 那么可能这个串是 -->
@@ -57,12 +58,17 @@ class LexicalAnalyser:
             # 生成一个类型为 TEXT 的 Token
             # 状态保持在TEXT中
             elif ch == '\n' or ch is None:
-                createType = SrtToken.TYPE_TEXT
+                if ch is not None:
+                    self.char_buffer += ch
+                    createType = SrtToken.TYPE_TEXT
+                elif ch is None and len(self.char_buffer) == 0:
+                    createType = None
                 self.state = SrtToken.TYPE_TEXT
 
             # 其他输字符, 直接加入到缓冲区
             else:
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
 
         # 标号状态的情况
         elif self.state == SrtToken.TYPE_COUNTER:
@@ -83,34 +89,45 @@ class LexicalAnalyser:
             # 如果此时输入为 : 号, 那么可能满足 TIMESTAMP 类型
             # 缓冲区中加入该符号, 并且状态跳到 TIMESTAMP
             elif ch == ":":
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
                 self.state = SrtToken.TYPE_TIMESTAMP
 
             # 其他情况的话说明类型为字幕内容类型, 即 TEXT
             # 缓冲区加入该字符并且状态跳转到TEXT类型
             else:
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
                 self.state = SrtToken.TYPE_TEXT
 
         # 时间跨度字符状态
         elif self.state == SrtToken.TYPE_TIME_ARROW:
             # 如果读入ch后, 直接为 --> 那么生成新的Token
             if after_append_ch == "-->":
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
                 createType = SrtToken.TYPE_TIME_ARROW
                 self.state = SrtToken.TYPE_TEXT
             # 仍然可能满足 -->
             elif after_append_ch in "-->":
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
                 self.state = SrtToken.TYPE_TIME_ARROW
             # 不满足 --> 那么跳回到TEXT状态
             else:
-                self.char_buffer += ch
+                if ch is not None:
+                    self.char_buffer += ch
                 self.state = SrtToken.TYPE_TEXT
         # 时间戳状态
         elif self.state == SrtToken.TYPE_TIMESTAMP:
+
+            # 去掉前置0
+
+            tmp_string = after_append_ch.lstrip()
+
             # 用长度判断格式
-            tmp_len = len(after_append_ch)
+            # tmp_len = len(after_append_ch)
+            tmp_len = len(tmp_string)
 
             # 00:00:00,000
             # 至少到了第一个:
@@ -121,24 +138,29 @@ class LexicalAnalyser:
                     self.state = SrtToken.TYPE_TIMESTAMP
                 # 否则跳回到TEXT模式
                 else:
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TEXT
             elif tmp_len in (3, 6):
                 # 如果ch在这几个位置上是 : 的话
                 # 那么满足 TIMESTAMP 类型
                 if ch == ':':
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TIMESTAMP
                 # 否则跳回到 TEXT 类型
                 else:
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TEXT
             elif tmp_len == 9:
                 if ch == ",":
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TIMESTAMP
                 else:
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TEXT
             else:
                 # 长度已经超过12
@@ -150,20 +172,13 @@ class LexicalAnalyser:
                     self.state = SrtToken.TYPE_TEXT
                 # 仅仅视为字符串, 如 00:00:00,000x
                 else:
-                    self.char_buffer += ch
+                    if ch is not None:
+                        self.char_buffer += ch
                     self.state = SrtToken.TYPE_TEXT
 
-        # elif self.state == SrtToken.TYPE_EMPTY:
-        #     if ch.strip() == "":
-        #         self.char_buffer += ch
-        #         self.state = SrtToken.TYPE_EMPTY
-        #     else:
-        #         self.state = SrtToken.TYPE_TEXT
-        #         # 留给下一次判断类型
-        #         move_cursor = False
-
-
         if createType is not None:
+            if createType in (SrtToken.TYPE_COUNTER, SrtToken.TYPE_TIMESTAMP, SrtToken.TYPE_TIME_ARROW):
+                self.char_buffer = self.char_buffer.strip()
             self.tokens.append(SrtToken(createType, self.char_buffer))
             # 记得清空缓冲区
             self.char_buffer = ""
@@ -172,9 +187,6 @@ class LexicalAnalyser:
 
 def test(text):
     analyser = LexicalAnalyser()
-    # text = "0\n00:00:00,000 -->00:00:00,100\n 00:00:00,200\n"
-    # text = "\n\n"
-    # text = "10\n"
     # with open("subtitle") as f:
     #     text = f.read()
     i = 0
@@ -192,4 +204,5 @@ def test(text):
 
 if __name__ == '__main__':
     # test("   ABD ABC")
-    test(" 0\n  00:00:00,000")
+    text = "0\n\n00:00:00,000 --> 11:11:11,111\nHello World!\nHello from the other side\n\n1\n00:00:00,000 --> 11:11:11,111\nThe Second Subtitle\n"
+    test(text)

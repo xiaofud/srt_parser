@@ -21,6 +21,8 @@ class SrtToken:
     TYPE_TEXT = 3
     # 空
     TYPE_EMPTY = 4
+    # 结束输入类型
+    TYPE_END_OF_FILE = 5
 
 
     def __init__(self, type_=None, value=None):
