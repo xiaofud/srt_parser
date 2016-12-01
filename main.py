@@ -93,10 +93,12 @@ def lexical_analyse(text):
     print(analyser.tokens)
 
 def arg_handle():
+    # https://docs.python.org/3/library/argparse.html#nargs
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("-d", "--display", metavar="filename", help="Display the subtitles in the file")
     arg_parser.add_argument("-p", "--parse", metavar="filename", help="Parse the srt file")
     arg_parser.add_argument("-l", "--lexical", metavar="filename", help="Analyse the srt file lexically")
+    arg_parser.add_argument("-m", "--manipulate", metavar=("input", "seconds", "output"), nargs=3, help="forward/delay subtitles of input file by seconds and dump to output file")
 
     args = arg_parser.parse_args()
 
@@ -126,6 +128,22 @@ def arg_handle():
             print(args.lexical, "doesn't exist")
             return
         lexical_analyse(content)
+    elif args.manipulate:
+        # print(args.manipulate)
+        input_, seconds, output_ = args.manipulate
+        if not seconds.isdigit():
+            print("argument seconds must be integer")
+            return
+        seconds = int(seconds)
+        content = read_srt_file(input_)
+        if content is None:
+            print(input_, "doesn't exist")
+            return
+        subtitles = parse(content)
+        if subtitles is None:
+            print("INCORRECT FORMAT IN FILE", input_)
+            return
+        move_subtitles(subtitles, seconds, output_)
     else:
         arg_parser.print_help()
 
