@@ -115,5 +115,6 @@ class SrtParser:
                     break
 
         print("Tokens:")
-        print(self.analyser.tokens)
+        for token in self.analyser.tokens:
+            print(token)
         return subtitles

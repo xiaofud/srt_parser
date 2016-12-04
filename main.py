@@ -90,7 +90,9 @@ def lexical_analyse(text):
             else:
                 ch = None
     print("input\n", text, sep="")
-    print(analyser.tokens)
+    # print(analyser.tokens)
+    for token in analyser.tokens:
+        print(token)
 
 def arg_handle():
     # https://docs.python.org/3/library/argparse.html#nargs

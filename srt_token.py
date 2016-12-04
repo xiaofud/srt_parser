@@ -24,6 +24,13 @@ class SrtToken:
     # 结束输入类型
     TYPE_END_OF_FILE = 5
 
+    REPRESENTATION = {
+        TYPE_COUNTER: "number",
+        TYPE_TIMESTAMP: "timestamp",
+        TYPE_TIME_ARROW: "arrow",
+        TYPE_TEXT: "subtitle"
+    }
+
 
     def __init__(self, type_=None, value=None):
         self.type = type_
@@ -36,4 +43,4 @@ class SrtToken:
         self.value = val
 
     def __repr__(self):
-        return "<%r>: %r" % ( self.value, self.type)
+        return "<%r>: %r" % ( self.value, SrtToken.REPRESENTATION[self.type])
