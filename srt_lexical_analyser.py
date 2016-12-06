@@ -181,8 +181,20 @@ class LexicalAnalyser:
                     self.state = SrtToken.TYPE_TEXT
 
         if createType is not None:
+
+            # 检查时间戳类型
+            if createType == SrtToken.TYPE_TIMESTAMP:
+                hour, minutes, seconds = self.char_buffer.split(":")
+                seconds = int(seconds[: 2]) # 取正数部分
+                # hour 不需要检查
+                minutes = int(minutes)
+                # 时间时间不合法, 归为TEXT
+                if minutes > 59 or seconds > 59:
+                    createType = SrtToken.TYPE_TEXT
+
             if createType in (SrtToken.TYPE_COUNTER, SrtToken.TYPE_TIMESTAMP, SrtToken.TYPE_TIME_ARROW):
                 self.char_buffer = self.char_buffer.strip()
+
             self.tokens.append(SrtToken(createType, self.char_buffer))
             # 记得清空缓冲区
             self.char_buffer = ""
@@ -210,7 +222,7 @@ if __name__ == '__main__':
     # test("   ABD ABC")
     text = """0
 00:00:00,000 --> 00:00:01,000
-this is the last line of subtitle 0
+this is the last line of subtitle 0`
 what's going on?
 -->
 1995
