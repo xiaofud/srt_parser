@@ -66,6 +66,10 @@ def move_subtitles(subtitles, seconds, filename):
         start_time += seconds
         end_time += seconds
 
+        if start_time < 0 or end_time < 0:
+            print("TIMESTAMP OUT OF RANGE!!!")
+            return 
+
         sub.start_time = Subtitle.to_srt_timestamp(start_time)
         sub.end_time = Subtitle.to_srt_timestamp(end_time)
     Subtitle.to_srt_file(subtitles, filename)
@@ -133,10 +137,11 @@ def arg_handle():
     elif args.manipulate:
         # print(args.manipulate)
         input_, seconds, output_ = args.manipulate
-        if not seconds.isdigit():
-            print("argument seconds must be integer")
+        try:
+            seconds = int(seconds)
+        except Exception as e:
+            print("argument seconds must be an integer")
             return
-        seconds = int(seconds)
         content = read_srt_file(input_)
         if content is None:
             print(input_, "doesn't exist")
