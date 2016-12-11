@@ -14,7 +14,7 @@ def read_srt_file(filename):
     if not os.path.exists(filename):
         # print("{} doesn't exist".format(filename))
         return None
-    with open(filename) as f:
+    with open(filename, encoding="UTF-8") as f:
         return f.read()
 
 def parse(srt):
@@ -68,7 +68,7 @@ def move_subtitles(subtitles, seconds, filename):
 
         if start_time < 0 or end_time < 0:
             print("TIMESTAMP OUT OF RANGE!!!")
-            return 
+            return
 
         sub.start_time = Subtitle.to_srt_timestamp(start_time)
         sub.end_time = Subtitle.to_srt_timestamp(end_time)
